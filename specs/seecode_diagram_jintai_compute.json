@@ -1,0 +1,205 @@
+{
+  "type": "flowchart",
+  "lang": "zh-CN",
+  "skin": "dark",
+  "size": "wide",
+  "motion": "trace",
+  "watermark": false,
+  "eyebrow": "FLOW / 金泰 AI 智算平台主流程 · 演示流程，未接业务后台",
+  "title": "金泰 AI 算力套餐询价与审批流程",
+  "subtitle": "并行核验 8×H100 算力库存与五档价格 · 8% 越权折扣特批 · 人工确认外发",
+  "nodes": [
+    {
+      "id": "inbox",
+      "label": "收到询价",
+      "sub": "500人并发算力 · 申请 8%",
+      "icon": "mail",
+      "row": 0,
+      "col": 0
+    },
+    {
+      "id": "fork",
+      "label": "拆解任务",
+      "sub": "并行核对算力与价格规则",
+      "icon": "gear",
+      "row": 0,
+      "col": 1
+    },
+    {
+      "id": "price",
+      "label": "核对价格规则",
+      "sub": "目录价 ¥225,000 · 权限 3%",
+      "icon": "lock",
+      "kind": "store",
+      "row": 1,
+      "col": 0
+    },
+    {
+      "id": "stock",
+      "label": "查询算力库存",
+      "sub": "A机 8×H100 可用 8 卡",
+      "icon": "database",
+      "kind": "store",
+      "row": 1,
+      "col": 1
+    },
+    {
+      "id": "hold",
+      "label": "待处理状态",
+      "sub": "库存不足或未通过 · 挂起",
+      "icon": "flag",
+      "kind": "security",
+      "row": 1,
+      "col": 2
+    },
+    {
+      "id": "calc",
+      "label": "计算折后报价",
+      "sub": "¥225,000 × 92% = ¥207,000",
+      "icon": "money",
+      "row": 2,
+      "col": 0
+    },
+    {
+      "id": "gate",
+      "label": "折扣越权?",
+      "sub": "申请 8% > 权限 3%",
+      "shape": "decision",
+      "row": 2,
+      "col": 1
+    },
+    {
+      "id": "mgr",
+      "label": "经理审批",
+      "sub": "总经理特批 · 已通过",
+      "icon": "person",
+      "focal": true,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "id": "quote",
+      "label": "待发送报价",
+      "sub": "条件满足 · 发送保留人工操作",
+      "icon": "document",
+      "focal": true,
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "edges": [
+    [
+      "inbox",
+      "fork",
+      "解析询价",
+      "primary"
+    ],
+    [
+      "fork",
+      "price",
+      "并行查询",
+      "link"
+    ],
+    [
+      "fork",
+      "stock",
+      "并行查询",
+      "primary"
+    ],
+    [
+      "price",
+      "calc",
+      "规则返回",
+      "link"
+    ],
+    [
+      "stock",
+      "calc",
+      "算力充足",
+      "primary"
+    ],
+    [
+      "stock",
+      "hold",
+      "库存不足",
+      "async"
+    ],
+    [
+      "calc",
+      "gate",
+      "提交核验",
+      "primary"
+    ],
+    [
+      "gate",
+      "quote",
+      "≤ 3% 直达",
+      "muted"
+    ],
+    [
+      "gate",
+      "mgr",
+      "> 3% 需审批",
+      "primary"
+    ],
+    [
+      "mgr",
+      "hold",
+      "审批未通过",
+      "async"
+    ],
+    [
+      "mgr",
+      "quote",
+      "审批通过",
+      "primary"
+    ]
+  ],
+  "evidence": [
+    {
+      "id": "inbox",
+      "file": "JT-INQ-20261102",
+      "note": "政企客户提交 500 人并发档智算平台包月询价，申请 8% 商务特批折扣"
+    },
+    {
+      "id": "fork",
+      "file": "parallel-dispatch",
+      "note": "同时触发 A 机 8×H100 算力余量核验与五档并发目录价规则查询"
+    },
+    {
+      "id": "price",
+      "file": "pricing-rule-v2",
+      "note": "500 人并发档标准价 ¥225,000/月（¥450/人），销售常规折扣权限 ≤ 3%"
+    },
+    {
+      "id": "stock",
+      "file": "172.16.0.10:8188-8195",
+      "note": "A 机 8×H100 (609.9 GiB VRAM) 实时在线，满足 500 人并发独占配额"
+    },
+    {
+      "id": "hold",
+      "file": "status:pending-hold",
+      "note": "当算力库存不足或总经理驳回 8% 折扣时，流程停在待处理状态等待人工介入"
+    },
+    {
+      "id": "calc",
+      "file": "quote-calc-engine",
+      "note": "原价 ¥225,000 × 92% = 折后 ¥207,000/月（特批减免 ¥18,000/月）"
+    },
+    {
+      "id": "gate",
+      "file": "discount-policy-gate",
+      "note": "8% > 3% 销售权限上限，系统拦截直发并强制路由至经理审批"
+    },
+    {
+      "id": "mgr",
+      "file": "approval:gm-pass",
+      "note": "总经理复核客户年度算力框架价值，批准 8% 折扣申请"
+    },
+    {
+      "id": "quote",
+      "file": "JT-QT-20261102",
+      "note": "生成待发送报价单（¥207,000/月），外发客户与 :4300 白名单开通保留人工操作"
+    }
+  ]
+}

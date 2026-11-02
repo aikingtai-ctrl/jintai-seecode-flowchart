@@ -1,0 +1,205 @@
+{
+  "type": "flowchart",
+  "lang": "zh-CN",
+  "skin": "dark",
+  "size": "wide",
+  "motion": "trace",
+  "watermark": false,
+  "eyebrow": "FLOW / 主流程 · 演示流程，未接业务后台",
+  "title": "收到询价与折扣审批动态流程图",
+  "subtitle": "并行查询库存与价格 · 3%权限 vs 8%申请需经理审批 · 获批生成待发送报价（保留人工发送） · 异常停在待处理状态",
+  "nodes": [
+    {
+      "id": "inbox",
+      "label": "收到询价",
+      "sub": "100 套终端 · 申请 8% 折扣",
+      "icon": "mail",
+      "row": 0,
+      "col": 0
+    },
+    {
+      "id": "fork",
+      "label": "拆解任务",
+      "sub": "并行核对库存与价格规则",
+      "icon": "gear",
+      "row": 0,
+      "col": 1
+    },
+    {
+      "id": "price",
+      "label": "核对规则",
+      "sub": "目录价 ¥1,200 · 权限 3%",
+      "icon": "lock",
+      "kind": "store",
+      "row": 1,
+      "col": 0
+    },
+    {
+      "id": "stock",
+      "label": "查询库存",
+      "sub": "可用 120 套 · 库存表",
+      "icon": "database",
+      "kind": "store",
+      "row": 1,
+      "col": 1
+    },
+    {
+      "id": "hold",
+      "label": "待处理状态",
+      "sub": "库存不足或未通过 · 人工挂起",
+      "icon": "flag",
+      "kind": "security",
+      "row": 1,
+      "col": 2
+    },
+    {
+      "id": "calc",
+      "label": "计算报价",
+      "sub": "¥120,000 × 92% = ¥110,400",
+      "icon": "money",
+      "row": 2,
+      "col": 0
+    },
+    {
+      "id": "gate",
+      "label": "折扣越权?",
+      "sub": "8% > 3% · 需要审批",
+      "shape": "decision",
+      "row": 2,
+      "col": 1
+    },
+    {
+      "id": "mgr",
+      "label": "经理审批",
+      "sub": "审批通过后才能继续",
+      "icon": "person",
+      "focal": true,
+      "row": 2,
+      "col": 2
+    },
+    {
+      "id": "quote",
+      "label": "待发送报价",
+      "sub": "条件满足 · 发送保留人工操作",
+      "icon": "document",
+      "focal": true,
+      "row": 3,
+      "col": 1
+    }
+  ],
+  "edges": [
+    [
+      "inbox",
+      "fork",
+      "解析",
+      "primary"
+    ],
+    [
+      "fork",
+      "price",
+      "并行查询",
+      "link"
+    ],
+    [
+      "fork",
+      "stock",
+      "并行查询",
+      "primary"
+    ],
+    [
+      "price",
+      "calc",
+      "规则返回",
+      "link"
+    ],
+    [
+      "stock",
+      "calc",
+      "库存充足",
+      "primary"
+    ],
+    [
+      "stock",
+      "hold",
+      "库存不足",
+      "async"
+    ],
+    [
+      "calc",
+      "gate",
+      "提交检查",
+      "primary"
+    ],
+    [
+      "gate",
+      "quote",
+      "≤ 3% 直达",
+      "muted"
+    ],
+    [
+      "gate",
+      "mgr",
+      "> 3% 需审批",
+      "primary"
+    ],
+    [
+      "mgr",
+      "hold",
+      "审批未通过",
+      "async"
+    ],
+    [
+      "mgr",
+      "quote",
+      "审批通过",
+      "primary"
+    ]
+  ],
+  "evidence": [
+    {
+      "id": "inbox",
+      "file": "INQ-2026-0418",
+      "note": "收到 100 套行业终端采购询价，随单申请 8% 专案折扣"
+    },
+    {
+      "id": "fork",
+      "file": "parallel-query",
+      "note": "并行发起中心仓现货库存查询与目录价格规则查询"
+    },
+    {
+      "id": "price",
+      "file": "price-table-v1",
+      "note": "目录单价 ¥1,200/套（100 套原价 ¥120,000），销售日常折扣权限 ≤ 3%"
+    },
+    {
+      "id": "stock",
+      "file": "warehouse-stock",
+      "note": "当前可分配库存 120 套，满足 100 套询价需求（余量 +20 套）"
+    },
+    {
+      "id": "hold",
+      "file": "status:pending-hold",
+      "note": "库存不足或审批未通过时，流程停在待处理状态等待补货或调整折扣"
+    },
+    {
+      "id": "calc",
+      "file": "quote-calculator",
+      "note": "原价 ¥120,000 × (1 - 8%) = ¥110,400（特批减免 ¥9,600）"
+    },
+    {
+      "id": "gate",
+      "file": "discount-gate",
+      "note": "本次申请 8% 超出销售 3% 权限上限，需进入经理审批"
+    },
+    {
+      "id": "mgr",
+      "file": "manager-approval",
+      "note": "经理审批通过后流转至待发送报价；若驳回则转入待处理状态"
+    },
+    {
+      "id": "quote",
+      "file": "QT-2026-0418",
+      "note": "生成待发送报价单（¥110,400），最终发送动作保留给销售人工操作"
+    }
+  ]
+}
